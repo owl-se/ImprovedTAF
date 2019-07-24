@@ -1,9 +1,9 @@
-package taf.utils;
+package taf.core;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import static taf.testRunParams.Dictionary.*;
+import static taf.core.Dictionary.*;
 
 public class ConfigManager {
 

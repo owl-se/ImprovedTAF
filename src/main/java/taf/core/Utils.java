@@ -1,5 +1,9 @@
-package taf.utils;
+package taf.core;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -95,6 +99,45 @@ public class Utils {
     }
 
     public static String getCurrentDate_YYYY_MM_dd_Slashes() {
-        
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY");
+        return dateFormat.format(d);
     }
+
+    public static String getYesterdayDate_YYYY_MM_dd_Slashes() {
+        Date d = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.add(Calendar.DATE, -1);
+        d = c.getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY");
+        return dateFormat.format(d);
+    }
+
+    public static String getTimeStamp() {
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        return "[" + dateFormat.format(d) + "]";
+    }
+
+    public static void createFolder(String folderPath) {
+        File file = new File(folderPath);
+        if (!file.exists()) {
+            log.info("create folder: " + folderPath);
+            file.mkdir();
+            log.info("folder created: " + folderPath);
+        }
+    }
+
+    public static void createFile(String filePath, String content) throws IOException {
+        log.info("create file: " + filePath);
+        File file = new File(filePath);
+        file.createNewFile();
+        FileWriter fw = new FileWriter(file.getAbsoluteFile());
+        BufferedWriter bw = new BufferedWriter(fw);
+        bw.write(content);
+        bw.close();
+    }
+
+
 }
