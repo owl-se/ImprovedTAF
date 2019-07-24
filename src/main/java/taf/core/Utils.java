@@ -1,9 +1,8 @@
 package taf.core;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import org.openqa.selenium.WebDriver;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -127,6 +126,7 @@ public class Utils {
             file.mkdir();
             log.info("folder created: " + folderPath);
         }
+        log.info("such folder already exists: " + folderPath);
     }
 
     public static void createFile(String filePath, String content) throws IOException {
@@ -137,6 +137,105 @@ public class Utils {
         BufferedWriter bw = new BufferedWriter(fw);
         bw.write(content);
         bw.close();
+    }
+
+    public static String getPageSource(WebDriver driver) {
+        return driver.getPageSource();
+    }
+
+    public static String generateFileReturnName(String fileType, String stringInsideFileName) {
+        String runTime = getUniqueString();
+        String newFileName = runTime;
+        String sampleFileName = "";
+
+        if (fileType.equalsIgnoreCase(Dictionary.TXT)) {
+            newFileName = stringInsideFileName + runTime + getRandomNumberString() + ".txt";
+            sampleFileName = TEST_TEXT_FILE_NAME;
+        }
+
+        if (fileType.equalsIgnoreCase(Dictionary.PNG)) {
+            newFileName = stringInsideFileName + runTime + getRandomNumberString() + ".png";
+            sampleFileName = TEST_PNG_FILE_NAME;
+        }
+
+        InputStream oInStream = null;
+        OutputStream oOutStream = null;
+
+        try {
+            oInStream = new FileInputStream(ConfigManager.getPathToSampleFilesFolder() + sampleFileName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            oOutStream = new FileOutputStream(ConfigManager.getPathToTestFilesFolder() + newFileName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        byte[] oBytes = new byte[1024];
+        int nLength;
+        BufferedInputStream oBuffInputStream = new BufferedInputStream( oInStream );
+        try {
+            while ((nLength = oBuffInputStream.read(oBytes)) > 0)
+            {
+                oOutStream.write(oBytes, 0, nLength);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            oInStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            oOutStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("created file: " + newFileName);
+        return newFileName;
+    }
+
+    public static void deleteTempFiles() {
+        log.info("deleting temp files");
+        deleteTempFilesByExt(".txt");
+        deleteTempFilesByExt(".png");
+    }
+
+    public static void deleteTempFilesByExt(String ext) {
+        GenericExtFilter filer = new GenericExtFilter(ext);
+        File fileDir = new File(ConfigManager.getPathToTestFilesFolder());
+
+        String[] list = fileDir.list(filer);
+
+        // CHECK
+        if (list.length != 0) {
+            File fileDelete;
+            for (String file : list) {
+                String temp = new StringBuffer(ConfigManager.getPathToTestFilesFolder())
+                        .append(File.separator)
+                        .append(file).toString();
+                fileDelete = new File(temp);
+                fileDelete.delete();
+            }
+        }
+
+
+    }
+
+    public static class GenericExtFilter implements FilenameFilter {
+
+        private String ext;
+
+        public GenericExtFilter(String ext) {
+            this.ext = ext;
+        }
+
+        public boolean accept(File dir, String name) {
+            return (name.endsWith(ext));
+        }
     }
 
 

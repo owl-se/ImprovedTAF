@@ -3,147 +3,151 @@ package taf.core;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import java.util.logging.Logger;
+
 import static taf.core.Dictionary.*;
 
 public class ConfigManager {
 
-    private static String env = "not defined";
+    private final static String runConfigTag = Constants.RUN_CONFIG_FILE_MAIN_TAG;
+    private final static String envConfigTag = Constants.ENV_CONFIG_FILE_MAIN_TAG;
+    private final static String dbConfigTag = Constants.DB_CONFIG_FILE_MAIN_TAG;
 
-    private static final String mainConfigTag = "config";
+    private static Logger log = Logger.getLogger("");
 
-    private static Config currentConfigArray;
+    private static Config runConfig;
+    private static Config envConfig;
+    private static Config dbConfig;
 
-    private static Config commonConfigArray;
+    public static Config getRunConfig() {
+        return runConfig;
+    }
 
-    public static void defineEnv() {
-        String providedEnv = "" + System.getProperty("env");
-        if (providedEnv.equalsIgnoreCase(getDictLoc())
-                || providedEnv.equalsIgnoreCase(getDictProd())
-                || providedEnv.equalsIgnoreCase(getDictSt())
-                || providedEnv.equalsIgnoreCase(getDictTest())
-                || providedEnv.equalsIgnoreCase(getDictDev()) ) {
-            env = providedEnv;
+    public static Config getDbConfig() {
+        return dbConfig;
+    }
+
+    public static Config getEnvConfig() {
+        return envConfig;
+    }
+
+    public static void uploadRunConfigValues() {
+        log.info("uploading run config parameters");
+        String valFromSystem = System.getProperty("run_config");
+        String configFileName = "run_config_main";
+        if (valFromSystem != null) {
+            configFileName = valFromSystem;
         }
-        else {
-            env = getDefaultEnv();
+        log.info("run config file is: " + configFileName);
+        runConfig = ConfigFactory.load(configFileName);
+    }
+
+    public static void uploadDbConfigValues() {
+        log.info("uploading db configs");
+        String valFromSystem = System.getProperty("db_config");
+        String configFileName = "db_config_main";
+        if (valFromSystem != null) {
+            configFileName = valFromSystem;
         }
+        log.info("db config file is: " + configFileName);
+        dbConfig = ConfigFactory.load(configFileName);
     }
 
-    public static String getEnv() {
-        return env;
-    }
-
-    private static String getCurrentConfigsFileName() {
-        return "config_" + getEnv();
-    }
-
-    private static void defineCurrentConfig() {
-        currentConfigArray = ConfigFactory.load(getCurrentConfigsFileName());
-    }
-
-    private static String getCommonConfigsFileName() {
-        return "config_common";
-    }
-
-    public static void defineCommonConfigs() {
-        commonConfigArray = ConfigFactory.load(getCommonConfigsFileName());
-    }
-
-    private static String getDefaultEnv() {
-        return commonConfigArray.getString(mainConfigTag + ".default_env");
-    }
-
-    public static boolean isScreenshotOnPass() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".screenshotOnTestSuccess"));
-    }
-
-    public static boolean isScreenshotOnFail() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".screenshotOnTestFailure"));
-    }
-
-    public static boolean isPageSourceOnPass() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".htmlSourceOnTestSuccess"));
-    }
-
-    public static boolean isPageSourceOnFails() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".htmlSourceOnTestFailure"));
+    public static void uploadEnvConfigValues() {
+        log.info("uploading environment config parameters");
+        String valFromSystem = System.getProperty("env_config");
+        String configFileName = "env_config_main";
+        if (valFromSystem != null) {
+            configFileName = valFromSystem;
+        }
+        log.info("env config file is: " + configFileName);
+        envConfig = ConfigFactory.load(configFileName);
     }
 
     public static String getPathToSampleFilesFolder() {
-        String path = System.getProperty("user.dir") + commonConfigArray.getString(mainConfigTag + ".pathToSampleFiles");
+        String path = System.getProperty("user.dir") + runConfig.getString(runConfigTag + ".path_to_sample_files");
         if (Utils.getCurrentOS().contains("wind")) {
             path = path.replace("/", "\\");
         }
         return path;
     }
 
-    static boolean isHeadless() {
-        String headlessModeFromCmdStr = "" + System.getProperty("headless");
-        if (!headlessModeFromCmdStr.equalsIgnoreCase("null")) {
-            return Boolean.valueOf(headlessModeFromCmdStr);
+    public static String getPathToTestFilesFolder() {
+        String path = System.getProperty("user.dir") + runConfig.getString(runConfigTag + ".path_to_temp_files");
+        if (Utils.getCurrentOS().contains("wind")) {
+            path = path.replace("/", "\\");
+        }
+        return path;
+    }
+
+    public static String getBrowserName() {
+        if (System.getProperty("browser") != null) {
+            return System.getProperty("browser");
         }
         else {
-            return getDefaultHeadless();
+            return envConfig.getString(envConfigTag + ".browser");
         }
     }
 
-    private static Boolean getDefaultHeadless() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".default_headless"));
+    public static String getDbUsername() {
+        return dbConfig.getString(dbConfigTag + ".username");
     }
 
-    private static String getDefaultBrowserName() {
-        return commonConfigArray.getString(mainConfigTag + ".default_browser");
+    public static String getDbPassword() {
+        return dbConfig.getString(dbConfigTag + ".password");
     }
 
-    public static String getRequiredBrowserName() {
-        String browserCmdLine = "" + System.getProperty("browser");
-        if (!browserCmdLine.equalsIgnoreCase("null")) {
-            return browserCmdLine;
-        } else {
-            return getDefaultBrowserName();
-        }
+    public static String getDbServer() {
+        return dbConfig.getString(dbConfigTag + ".server");
     }
 
-    public static int getWaitForPageSec() {
-        return currentConfigArray.getInt(mainConfigTag + ".wait_for_page_upload_sec");
+    public static String getDbPort() {
+        return dbConfig.getString(dbConfigTag + ".port");
+    }
+
+    public static int getWaitForPageUploadSec() {
+        return envConfig.getInt(envConfigTag + ".wait_for_page_upload_sec");
     }
 
     public static String getGridHubUrl() {
-        return commonConfigArray.getString(mainConfigTag + "gridHubUrl");
+        return runConfig.getString(runConfigTag + ".grid_hub_url");
     }
 
     public static String getGridHost() {
-        return commonConfigArray.getString(mainConfigTag + ".gridHost");
+        return runConfig.getString(runConfigTag + ".grid_host");
     }
 
     public static boolean isGrid() {
-        if (isSelenoid()) {
-            return true;
-        } else {
-            String browserCmdStr = "" + System.getProperty("grid");
-            if (!browserCmdStr.equalsIgnoreCase("null")) {
-                return Boolean.valueOf(browserCmdStr);
-            } else {
-                return isGridByDefault();
-            }
-        }
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".use_grid"));
     }
 
     public static boolean isSelenoid() {
-        String browserCmdStr = "" + System.getProperty("selenoid");
-        if (!browserCmdStr.equalsIgnoreCase("null")) {
-            return Boolean.valueOf(browserCmdStr);
-        } else {
-            return isSelenoidByDefault();
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".use_selenoid"));
+    }
+
+    public static boolean isHeadless() {
+        if (System.getProperty("headless") != null) {
+            return Boolean.valueOf(System.getProperty("headless"));
+        }
+        else {
+            return Boolean.valueOf(runConfig.getString(runConfigTag + ".headless"));
         }
     }
 
-    private static boolean isGridByDefault() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".useGridByDefault"));
+    public static boolean isScreenOnFailure() {
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".screenshot_on_test_failure"));
     }
 
-    private static boolean isSelenoidByDefault() {
-        return Boolean.valueOf(commonConfigArray.getString(mainConfigTag + ".useSelenoidByDefault"));
+    public static boolean isScreenOnSuccess() {
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".screenshot_on_test_success"));
+    }
+
+    public static boolean isHtmlOnFailure() {
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".html_source_on_test_failure"));
+    }
+
+    public static boolean isHtmlOnSuccess() {
+        return Boolean.valueOf(runConfig.getString(runConfigTag + ".html_source_on_test_success"));
     }
 
 
