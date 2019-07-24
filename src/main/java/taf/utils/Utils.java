@@ -44,4 +44,57 @@ public class Utils {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd_MM_HHmmss");
         return dateFormat.format(d) + getRandomNumber(999);
     }
+
+    public static String getUniqueStringCharsOnly(int len) {
+        String SALTCHARS = "abcdefghijklmnopqrstuvwxyz";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < len) {
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        return saltStr;
+    }
+
+    public static String getUniqueStringNumbersOnly(int len) {
+        String SALTCHARS = "0123456789";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < len) {
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        return saltStr;
+    }
+
+    public static String getUniqueStringFromPossibleChars(String possibleChars, int len) {
+        String SALTCHARS = possibleChars;
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < len) {
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        return saltStr;
+    }
+
+    public static String getCurrentDate_YYYY_MM_dd() {
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        return dateFormat.format(d);
+    }
+
+    public static String getCurrentDate_YYYY_MM_dd_UTC() {
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat.format(d);
+    }
+
+    public static String getCurrentDate_YYYY_MM_dd_Slashes() {
+        
+    }
 }
