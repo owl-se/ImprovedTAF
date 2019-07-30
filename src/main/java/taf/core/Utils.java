@@ -18,6 +18,7 @@ import java.util.*;
 
 import static taf.core.ConfigManager.getPathToSampleFilesFolder;
 import static taf.core.ConfigManager.isSelenoid;
+import static taf.core.TestRunParams.getPathToDownloads;
 
 
 public class Utils {
@@ -44,9 +45,7 @@ public class Utils {
     }
 
     public static String getCurrentTimeWithSec() {
-        Date d = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateFormat.format(d);
+        return getCurrentDate("yyyy-MM-dd HH:mm:ss");
     }
 
     public static String getCurrentTimeWithMSec() {
@@ -95,6 +94,12 @@ public class Utils {
         }
         String saltStr = salt.toString();
         return saltStr;
+    }
+
+    public static String getCurrentDate(String dateFormatTemplate) {
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMHHmmss");
+        return dateFormat.format(d) + getRandomNumber(999);
     }
 
     public static String getCurrentDate_YYYY_MM_dd() {
@@ -361,7 +366,7 @@ public class Utils {
 
     public static boolean isFileDownloaded(String fileName) {
         boolean isDownloaded = false;
-        String downloadsPath = getPathDownloads();
+        String downloadsPath = getPathToDownloads();
         File file = new File(downloadsPath + fileName);
         if (file.exists()) {
             isDownloaded = true;
