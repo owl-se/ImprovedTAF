@@ -1,11 +1,24 @@
 package taf.core;
 
+import org.apache.log4j.Logger;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
+import ru.yandex.qatools.ashot.AShot;
+import ru.yandex.qatools.ashot.Screenshot;
+import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Logger;
+
+import static taf.core.ConfigManager.getPathToSampleFilesFolder;
+import static taf.core.ConfigManager.isSelenoid;
+
 
 public class Utils {
 
@@ -162,7 +175,7 @@ public class Utils {
         OutputStream oOutStream = null;
 
         try {
-            oInStream = new FileInputStream(ConfigManager.getPathToSampleFilesFolder() + sampleFileName);
+            oInStream = new FileInputStream(getPathToSampleFilesFolder() + sampleFileName);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -238,5 +251,220 @@ public class Utils {
         }
     }
 
+    public static void renameFile(String pathToFile, String oldFileName, String newFileName) {
+        File file = new File(pathToFile + oldFileName);
+        file.renameTo(new File(newFileName));
+        log.info("file [" + oldFileName + "] is renamed to [" + newFileName + "]");
+    }
+
+    public static void deleteFileByPartialName(String namePart, String folderPath) {
+        final File folder = new File(folderPath);
+        for (File f : folder.listFiles()) {
+            if (f.getName().contains(namePart)) {
+                f.delete();
+            }
+        }
+    }
+
+    public static boolean waitUntilFileIsDownloaded(String fileName) {
+        final Logger log = Logger.getLogger("");
+        int timeoutSec = 30;
+        int refreshStepSec = 1;
+        int spentTimeSec = 0;
+        boolean status = true;
+
+        File file = new File(getPathToDownloads() + fileName);
+
+        log.info("waiting up to " + timeoutSec + " sec until file [" + fileName + "] is downloaded");
+        while (!file.exists() && (spentTimeSec < timeoutSec)) {
+            sleepMsec(refreshStepSec * 1000);
+            spentTimeSec = spentTimeSec + refreshStepSec;
+            log.info("it's been " + spentTimeSec + " seconds");
+        }
+
+        if (!file.exists()) {
+            log.error("the file was not downloaded after " + timeoutSec + " seconds: " + fileName);
+            if (isSelenoid()) {
+                log.error("check out if the file is available on selenoid docker image");
+            }
+            status = false;
+        }
+        return status;
+    }
+
+    public static void sleepMsec(final long msec) {
+        try {
+            Thread.sleep(msec);
+        } catch (InterruptedException e) {
+
+        }
+    }
+
+    private static void wgetFile(String url) {
+        final Logger log = Logger.getLogger("");
+        String[] array = url.split("/");
+        String fileName = array[array.length - 1];
+        log.info("trying to download file [" + fileName +"] from [" + url + "]");
+        String command = "wget -O " + getPathToDownloads() + fileName + " " + url;
+        try {
+            Runtime.getRuntime().exec(command).waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        waitUntilFileIsDownloaded(fileName);
+    }
+
+    public static String getRandomNumberString() {
+        Random rand = new Random();
+        return "" + rand.nextInt(1000);
+    }
+
+    public static String getRandomNumberString(int number) {
+        Random rand = new Random();
+        return "" + rand.nextInt(number);
+    }
+
+    public static int getRandomNumber(int number) {
+        Random rand = new Random();
+        return rand.nextInt(number);
+    }
+
+    public static String getTextFromFile(String filePath) {
+        StringBuilder text = new StringBuilder();
+        BufferedReader br = null;
+        try {
+            String sCurrentLine;
+            br = new BufferedReader(new FileReader(filePath));
+            while ((sCurrentLine = br.readLine()) != null) {
+                text.append(sCurrentLine);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return text.toString();
+    }
+
+    public static boolean doesFileContainText(String filePath, String text) {
+        String fileText = getTextFromFile(filePath);
+        return filePath.contains(text);
+    }
+
+    public static boolean isFileDownloaded(String fileName) {
+        boolean isDownloaded = false;
+        String downloadsPath = getPathDownloads();
+        File file = new File(downloadsPath + fileName);
+        if (file.exists()) {
+            isDownloaded = true;
+        }
+        return isDownloaded;
+    }
+
+    public static List<String> sortAlphaBet(List<String> list) {
+        final Logger log = Logger.getLogger("");
+        Collections.sort(list);
+        log.info("sorted from A to Z list contains " + list.size() + " items");
+        log.info("sorted list: first item is [" + list.get(0) +
+                "]; last item is [" + list.get(list.size() - 1) + "]");
+        return list;
+    }
+
+    public static String getStringOfCharacters(String pattern, int length) {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; i < length; i ++) {
+            string.append(pattern);
+        }
+        return string.toString();
+    }
+
+    public static void manageFileDownloading(String fileName, RemoteWebDriver driver) {
+        if (isSelenoid()) {
+            log.info("downloading file from selenoid docker image");
+            sleepMsec(5000);
+            String gridFileUrl = ConfigManager.getGridHost() + "/download/" +
+                    driver.getSessionId() + "/" +
+                    fileName;
+            wgetFile(gridFileUrl);
+        }
+        else {
+            waitUntilFileIsDownloaded(fileName);
+        }
+    }
+
+    public static String getCurrentOS() {
+        return System.getProperty("os.name").toLowerCase();
+    }
+
+    public static String getText1000Symbols() {
+        String sFilePath = getPathToSampleFilesFolder() + "text_1000_symbols.txt";
+        return getTextFromFile(sFilePath);
+    }
+
+    public static String removePackageNameFromPath(String str) {
+        str = str.replace("project.steps.", "");
+        str = str.replace("project.pages.example.", "");
+        str = str.replace("project.cases.", "");
+        return str;
+    }
+
+    public static Screenshot makeScreenshot(WebDriver driver) {
+        log.info("making screenshot");
+        return new AShot()
+                .shootingStrategy(ShootingStrategies.viewportPasting(100))
+                .takeScreenshot(driver);
+    }
+
+    public static void saveScreenshotAsFile(String fileName, Screenshot screenshot) {
+        String filePath = TestRunParams.getScreenshotsLocation() + fileName;
+        final BufferedImage image = screenshot.getImage();
+        try {
+            ImageIO.write(image, "PNG", new File(filePath));
+            log.info("screenshot is saved here: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void printLine() {
+        String line = Utils.getStringOfCharacters("-", 70);
+        log.info(line);
+    }
+
+    public static void printDoubleLine() {
+        String line = Utils.getStringOfCharacters("=", 70);
+        log.info(line);
+    }
+
+    public static void printDashedLine() {
+        String line = Utils.getStringOfCharacters("- ", 35);
+        log.info(line);
+    }
+
+    public static long getCurrentThreadId() {
+        return Thread.currentThread().getId();
+    }
+
+    private static double round(double value, int places) {
+        BigDecimal bd = new BigDecimal(Double.toString(value));
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
+    public static double round(String stringValue, int places) {
+        stringValue = stringValue.replace(",", ".").trim();
+        double value = Double.parseDouble(stringValue.trim());
+        BigDecimal bd = new BigDecimal(Double.toString(value));
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
 
 }
