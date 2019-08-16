@@ -2,6 +2,7 @@ package taf.pages;
 
 import org.apache.log4j.Logger;
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import ru.yandex.qatools.htmlelements.element.Button;
@@ -213,6 +214,58 @@ public abstract class AbstractPage {
         waitForAngularLoad();
     }
 
+    private void waitUntilJSReady() throws JavascriptException {
+        WebDriver jsWaitDriver = getDriver();
+        WebDriverWait wait = new WebDriverWait(jsWaitDriver, 15);
+        JavascriptExecutor exec = (JavascriptExecutor)jsWaitDriver;
+
+        try {
+            ExpectedCondition<Boolean> jsLoad = driver -> ((JavascriptExecutor)jsWaitDriver)
+                    .executeScript("return document.readyState").toString().equals("complete");
+            boolean jsReady = (Boolean)exec.executeScript("return document.readyState").toString().equals("complete");
+            if (!jsReady) {
+                wait.until(jsLoad);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void waitForAngularLoad() throws JavascriptException {
+        WebDriver jsWaitDriver = getDriver();
+        WebDriverWait wait = new WebDriverWait(jsWaitDriver, 15);
+        JavascriptExecutor jsExec = (JavascriptExecutor) jsWaitDriver;
+
+        String angularReadyScript = "return angular.element(document).injector().get('$http').pendingRequests.length === 0";
+        try {
+            ExpectedCondition<Boolean> angularLoad = driver -> Boolean.valueOf(((JavascriptExecutor) driver)
+                    .executeScript(angularReadyScript).toString());
+            boolean angularReady = Boolean.valueOf(jsExec.executeScript(angularReadyScript).toString());
+            if (!angularReady) {
+                wait.until(angularLoad);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void waitForJQueryLoad() throws JavascriptException {
+        WebDriver jsWaitDriver = getDriver();
+        JavascriptExecutor jsExec = (JavascriptExecutor) jsWaitDriver;
+        WebDriverWait jsWait = new WebDriverWait(jsWaitDriver, 15);
+
+        try {
+            ExpectedCondition<Boolean> jQueryLoad = driver -> ((Long) ((JavascriptExecutor) jsWaitDriver)
+                    .executeScript("return jQuery.active") == 0);
+            boolean jqueryReady = (Boolean) jsExec.executeScript("return jQuery.active==0");
+            if(!jqueryReady) {
+                jsWait.until(jQueryLoad);
+            }
+        }
+        catch (Exception e) {
+            //
+        }
+    }
 
 
 }
