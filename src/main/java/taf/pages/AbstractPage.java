@@ -12,6 +12,8 @@ import ru.yandex.qatools.htmlelements.element.TextInput;
 import ru.yandex.qatools.htmlelements.loader.HtmlElementLoader;
 import taf.core.Utils;
 
+import static org.openqa.selenium.support.ui.ExpectedConditions.alertIsPresent;
+
 public abstract class AbstractPage {
 
     private WebDriver driver;
@@ -266,6 +268,47 @@ public abstract class AbstractPage {
             //
         }
     }
+
+    public void switchToFrame(WebElement frame) {
+        waitUntilDisplayed(frame);
+        waitForFrameAndSwitch(frame);
+        log.info("Switch to frame");
+    }
+
+    public void switchToDefaultContent() {
+        log.info("Switch back to default content");
+        getDriver().switchTo().defaultContent();
+    }
+
+    public void waitForFrameAndSwitch(final String frameId) {
+        (new WebDriverWait(getDriver(), WAIT_UNTIL_DISPLAYED)).until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(frameId));
+    }
+
+    public void waitForFrameAndSwitch(final WebElement frame) {
+        (new WebDriverWait(getDriver(), WAIT_UNTIL_DISPLAYED)).until(new ExpectedCondition<WebDriver>() {
+            public WebDriver apply(final WebDriver driver) {
+                try {
+                    return driver.switchTo().frame(frame);
+                } catch (final NoSuchFrameException e) {
+                    return null;
+                }
+            }
+        });
+    }
+
+    public void switchFromFrameToDefault() {
+        getDriver().switchTo().defaultContent();
+    }
+
+    public void acceptAlert(int timeOutInSeconds, int sleepInMillis) {
+        WebDriverWait wait = new WebDriverWait(getDriver(), timeOutInSeconds, sleepInMillis);
+        Alert alert = wait.until(alertIsPresent());
+        if (alert != null) {
+            alert.accept();
+        }
+    }
+
+
 
 
 }
