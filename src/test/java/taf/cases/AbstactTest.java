@@ -2,7 +2,9 @@ package taf.cases;
 
 import org.apache.log4j.Logger;
 import org.assertj.core.api.SoftAssertions;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
@@ -14,12 +16,14 @@ import taf.core.ConfigManager;
 import taf.core.CredsManager;
 import taf.core.RunTimeDataStorage;
 import taf.core.Utils;
+import taf.driverFactory.DriverFactory;
 import taf.models.Driver;
 
 import static taf.core.TestRunParams.getPathToAllArtifactsFolders;
 import static taf.core.TestRunParams.getPathToCurrentArtifactsFolder;
 import static taf.core.Utils.createFolder;
 import static taf.core.Utils.deleteTempFiles;
+import static taf.core.Utils.getCurrentThreadId;
 
 public abstract class AbstactTest {
 
@@ -84,5 +88,35 @@ public abstract class AbstactTest {
     @AfterMethod(alwaysRun = true)
     public void afterTestCase(ITestResult result) {
         //
+    }
+
+    Driver openBrowser() {
+        d = DriverFactory.createNewDriverInstance(ConfigManager.getBrowserName());
+        Utils.printDashedLine();
+        log.info("Browser: " + d.getBrowserName() + " | thread: " + getCurrentThreadId());
+        log.info("Driver: " + d.getDriver());
+        Utils.printDashedLine();
+        d.getDriver().manage().window().setSize(new Dimension(1366, 768));
+        return d;
+    }
+
+    void closeBrowser() {
+        if (d != null) {
+            log.info("closing browser");
+            Utils.printDashedLine();
+            log.info("Browser: " + d.getBrowserName() + " | thread: " + getCurrentThreadId());
+            log.info("Driver: " + d.getDriver());
+            Utils.printDashedLine();
+            try {
+                d.getDriver().quit();
+                Utils.sleepMsec(500);
+            }
+            catch (WebDriverException e) {
+                //
+            }
+        }
+        else {
+            log.info("Driver is null!");
+        }
     }
 }
