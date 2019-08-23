@@ -1,6 +1,5 @@
 package taf.core;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import taf.models.User;

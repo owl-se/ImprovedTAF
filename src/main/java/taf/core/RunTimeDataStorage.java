@@ -14,7 +14,7 @@ public class RunTimeDataStorage {
             caseOrderNumber++ ;
         }
 
-        public static int getCaseOrderNubmer() {
+        public static int getCaseOrderNumber() {
             return  caseOrderNumber;
         }
     }

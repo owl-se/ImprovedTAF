@@ -5,8 +5,6 @@ import com.typesafe.config.ConfigFactory;
 
 import java.util.logging.Logger;
 
-import static taf.core.Dictionary.*;
-
 public class ConfigManager {
 
     private final static String runConfigTag = Constants.RUN_CONFIG_FILE_MAIN_TAG;
@@ -149,6 +147,4 @@ public class ConfigManager {
     public static boolean isHtmlOnSuccess() {
         return Boolean.valueOf(runConfig.getString(runConfigTag + ".html_source_on_test_success"));
     }
-
-
 }

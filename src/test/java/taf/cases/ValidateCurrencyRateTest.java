@@ -11,7 +11,7 @@ import taf.pages.example.GoogleResultsPage;
 import taf.pages.example.GoogleSearchPage;
 
 @Name("Validate currency rate")
-@Test(groups = {"regression", "ui"})
+@Test(groups = {"regression", "ui", "example"})
 public class ValidateCurrencyRateTest extends CommonActionsTest {
 
     GoogleSearchPage searchPage;

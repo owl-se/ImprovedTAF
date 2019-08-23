@@ -14,7 +14,7 @@
         <webdrivermanager.version>3.6.0</webdrivermanager.version>
         <allure.version>2.10.0</allure.version>
         <!--Default values-->
-        <suite>regression.xml</suite>
+        <suite>example.xml</suite>
     </properties>
 
     <build>
@@ -25,7 +25,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <suiteXmlFiles>
-                        <suiteXmlFile>${project.basedir}/src/test/java/pfda/suites/${suite}</suiteXmlFile>
+                        <suiteXmlFile>${project.basedir}/src/test/java/taf/suites/${suite}</suiteXmlFile>
                     </suiteXmlFiles>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <argLine>
@@ -40,13 +40,9 @@
                             <name>listener</name>
                             <value>org.uncommons.reportng.HTMLReporter,
                                 org.uncommons.reportng.JUnitXMLReporter,
-                                pfda.logger.TestListener</value>
+                                taf.logger.TestListener</value>
                         </property>
                     </properties>
-                    <systemPropertyVariables>
-                        <propertyName>allure.results.directory</propertyName>
-                        <buildDirectory>/home/aabramenko/auto/precision-fda/test/functional/target/allure-results/</buildDirectory>
-                    </systemPropertyVariables>
                 </configuration>
                 <dependencies>
                     <dependency>

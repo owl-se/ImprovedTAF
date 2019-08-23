@@ -10,9 +10,4 @@
             <class name="taf.cases.ValidateCurrencyRateTest" />
         </classes>
     </test>
-    <test name="Wrong Creds Test">
-        <classes>
-            <class name="taf.cases.WrongCredsTest" />
-        </classes>
-    </test>
 </suite>

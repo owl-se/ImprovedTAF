@@ -48,6 +48,24 @@ public class DriverFactory {
                 }
             }
         }
+        else {
+
+            if (browserParameter.equalsIgnoreCase(Dictionary.FIREFOX)) {
+                driver = initiateFirefoxDriver();
+                browserName = Dictionary.FIREFOX;
+            } else if (browserParameter.equalsIgnoreCase(Dictionary.CHROME)) {
+                driver = initiateChromeDriver();
+                browserName = Dictionary.CHROME;
+            } else if (browserParameter.equalsIgnoreCase(Dictionary.MIX)) {
+                if (Utils.getCurrentThreadId() % 2 == 0) {
+                    driver = initiateChromeDriver();
+                    browserName = Dictionary.CHROME;
+                } else {
+                    driver = initiateFirefoxDriver();
+                    browserName = Dictionary.FIREFOX;
+                }
+            }
+        }
 
         return new Driver(driver, browserName);
     }

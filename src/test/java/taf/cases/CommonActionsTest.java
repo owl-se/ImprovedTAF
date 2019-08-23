@@ -6,7 +6,7 @@ import taf.core.XmlManager;
 import taf.data.TestData;
 import taf.pages.example.GoogleSearchPage;
 
-public class CommonActionsTest extends AbstactTest {
+public class CommonActionsTest extends AbstractTest {
 
     private Logger log = Logger.getLogger("");
 
